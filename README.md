@@ -17,7 +17,7 @@ feature
                  └─ WAIT FOR ALL 4 ──────────────┘
                       └─ all PASS → approver (opus / medium)
                              ├─ APPROVE  → merge to main
-                             └─ ESCALATE → needs-human ← /factory approve
+                             └─ ESCALATE → needs-human (a person decides)
 ```
 
 ## Routing table
@@ -34,24 +34,31 @@ feature
 | UX / UI / Code review | Sonnet 5.5 | low |
 | Approver | Opus 5.5 | medium |
 
-All values live in [`routing.yaml`](routing.yaml). The escalation rules are in [`docs/escalation.md`](docs/escalation.md).
+All values live in [`routing.yaml`](routing.yaml). The escalation rules are in [`skills/ai-model-router/references/escalation.md`](skills/ai-model-router/references/escalation.md).
 
 ## Install
 
-Copy the `.claude/` folder into your project, or into `~/.claude/` to use it everywhere:
+### Claude app (claude.ai / desktop)
+
+1. Download [`ai-model-router.zip`](ai-model-router.zip) from this repo.
+2. In Claude, open **Settings → Capabilities → Skills** and upload the zip.
+3. Ask Claude to build a feature, fix a bug or review a change, and the skill routes the work.
+
+### Claude Code
 
 ```bash
 git clone https://github.com/Amjad2002-tech/ai-model-router.git
-cp -r ai-model-router/.claude/* your-project/.claude/
+cp -r ai-model-router/skills/ai-model-router ~/.claude/skills/
+cp -r ai-model-router/.claude/agents/* ~/.claude/agents/     # optional: subagents with model + effort pinned
 ```
 
 ## Use
 
-```
-/factory add a dark-mode toggle to settings     # full pipeline
-/factory approve dark-mode-toggle               # clear a needs-human item
-"use the router agent: why is login slow?"      # triage a single request
-```
+Just describe the work, for example *"add a dark-mode toggle to settings"*. The skill triages it and runs the pipeline. No slash commands are needed.
+
+## Format
+
+A skill is a **Markdown** file (`SKILL.md`) with a short YAML header for its name and description. `routing.yaml` is only a settings table for reference; Claude loads the `.md`.
 
 ## Why the router runs on Sonnet
 
