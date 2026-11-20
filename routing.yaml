@@ -1,0 +1,32 @@
+# Single source of truth for model + effort routing.
+# Change a value here, then mirror it in the matching .claude/agents/*.md frontmatter.
+# Effort levels: low < medium < high < xhigh < max
+
+router:
+  model: sonnet          # cheap triage; runs on every request
+  effort: low
+  handles_itself: [question, explanation, tiny-edit, rename, typo, config-tweak]
+
+stages:
+  spec-writer:   { model: fable, effort: low,    runs: once-per-feature }
+  builder:       { model: opus,  effort: medium, max_rework_rounds: 2 }
+  designer:      { model: opus,  effort: medium }
+  debugger:      { model: opus,  effort: medium, ladder: [medium, high, max] }
+  hard-part:     { model: opus,  effort: xhigh }
+  reviewers:
+    security:    { model: opus,   effort: medium }
+    ux:          { model: sonnet, effort: low }
+    ui-design:   { model: sonnet, effort: low }
+    code:        { model: sonnet, effort: low }
+  approver:      { model: opus,  effort: medium, outcomes: [APPROVE, ESCALATE] }
+
+escalation:
+  # step up one effort level when any of these happen
+  triggers:
+    - same test still failing after a fix attempt
+    - fix touches more than 5 files or crosses module boundaries
+    - root cause unknown after one investigation pass
+    - concurrency, memory, data-loss or security-critical code
+  bug_ladder: [opus/medium, opus/high, opus/max]
+  hard_part: opus/xhigh   # for design dead-ends, not just bugs
+  after_max: needs-human
